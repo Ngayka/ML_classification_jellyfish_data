@@ -1,20 +1,28 @@
 from flask import Flask, render_template, request
 import numpy as np
-from tensorflow.keras.models import load_model
-from tensorflow.keras.preprocessing import image
-
+import tensorflow as tf
+from PIL import Image
 
 app = Flask(__name__)
 
-model = load_model("jellyfish_model.h5")
-class_names =
+model = tf.keras.models.load_model("jellyfish_model.keras")
 
-def preprocess(img_path):
-    img = image.load_img(img_path, target_size=(224, 224))
-    img_array = image.img_to_array(img)
-    img_array = img_array/255
-    img_array = np.expand_dims(img_array, axis=0)
-    return img_array
+class_names = [
+    'Moon_jellyfish',
+    'barrel_jellyfish',
+    'blue_jellyfish',
+    'compass_jellyfish',
+    'lions_mane_jellyfish',
+    'mauve_stinger_jellyfish'
+]
+
+def preprocess(file_path):
+    img =Image.open(file_path)
+    img = img.resize((224, 224))
+    img = np.array(img) / 255.0
+
+    img = np.expand_dims(img, axis=0)
+    return img
 
 
 @app.route("/")
@@ -30,7 +38,7 @@ def predict():
     img = preprocess(file_path)
     prediction = model.predict(img)
     predicted_class = class_names[np.argmax(prediction)]
-
+    print(prediction)
     return render_template("result.html", prediction_text=predicted_class)
 
 
